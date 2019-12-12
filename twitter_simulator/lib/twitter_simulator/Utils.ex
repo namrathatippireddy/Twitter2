@@ -146,15 +146,20 @@ defmodule Utils do
 
   def update_followers_list(userToSubscibe_id, user_id) do
     # we are updating the followers list of UserToSub_id
+    #IO.inspect(user_id)
+    IO.puts "Updating followers list of userid to subscribe@@@@@@@@@@@@@@@@@@@@@@@@@@"
     followers_list = get_followers(userToSubscibe_id, user_id)
+    #IO.inspect(followers_list)
     :ets.insert(:users, {userToSubscibe_id, followers_list})
   end
 
 
   def update_following_list(userToSubscibe_id, user_id) do
     # we also update the following table of the present user who called this function
+    IO.puts "Updating following list of user*****************************"
     subscribed_list = get_following(userToSubscibe_id, user_id)
     #IO.puts "subscribing"
+    #IO.inspect(subscribed_list)
     :ets.insert(:following, {user_id, subscribed_list})
   end
 
