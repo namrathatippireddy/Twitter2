@@ -9,19 +9,29 @@
 import {Socket} from "phoenix"
 
 let messageContainer = document.querySelector('#messages')
-let socket = new Socket("/socket", {params: {token: window.userToken}})
+let twitter_socket = new Socket("/socket", {params: {token: window.userToken}})
 let username = document.querySelector('#username')
+let subscription = document.querySelector('#subscribe')
+let search_user_tweets = document.querySelector('#search_user_tweets')
 
-function register(userName){
+function register_users(userName){
     //register the new client
     channel.push("register", userName)
-    .receive("registered" , resp => console.log("registered", resp))
+    .receive("registered_user" , resp => console.log("registered", resp))
 }
+
+//give subscribers to each client
+function subscribe_user(user_id, subscribeUser) {
+    channel.push("subscribe", {user_id: user_id, userToSub: subscribeUser})
+    .receive("subscribed", resp => console.log("subscribed", user_id))
+    console.log({username: user_id, usersToSub: subscribeUser})
+}
+
 
 /**event listener to  register username**/
 username.addEventListener("keypress", event => {
   if (event.keyCode === 13){
-      register(username.value)
+      register_users(username.value)
       let messageItem = document.createElement("li");
       messageItem.innerText = `${username.value} logged in at [${Date()}]`
       messageContainer.appendChild(messageItem)
@@ -29,15 +39,30 @@ username.addEventListener("keypress", event => {
   }
 })
 
+/**event listener to perform a user subscription*/
+subscription.addEventListener("keypress", event => {
+    if (event.keyCode === 13){
+        var val = document.getElementById('subscribe').value
+        subscribe_user(username.value, val)
+        let messageItem = document.createElement("li");
+        messageItem.innerText = `${username.value} subscribed to ${val} at [${Date()}]`
+        messageContainer.appendChild(messageItem)
+        subscribe.value = ""
+    }
+  })
 
-socket.connect()
+
+
+
+
+twitter_socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
-let channel = socket.channel("room:lobby", {})
+let channel = twitter_socket.channel("room:lobby", {})
 channel.join()
   .receive("ok", resp => { console.log("Joined successfully", resp) })
   .receive("error", resp => { console.log("Unable to join", resp) })
 
 
 
-export default socket
+export default twitter_socket

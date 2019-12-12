@@ -11,7 +11,7 @@ defmodule Engine do
     {:ok, state}
   end
 
-  def handle_call({:register_users, user_id, socket}, _from, state) do
+  def handle_call({:register_users, user_id}, _from, state) do
     IO.puts "registering"
     result = Utils.register_users(user_id)
     {:reply, result, state}
@@ -88,17 +88,23 @@ defmodule Engine do
   end
 
   # UserToSub_id is the one you want to follow, user_id is the one following
-  def handle_cast({:subscribe_user, userToSubscibe_id, user_id}, state) do
+  def handle_call({:subscribe_user, userToSubscibe_id, user_id}, _from, state) do
     # Utils.subscribe_user(userToSubscibe_id, user_id)
-
-    if(:ets.member(:users, userToSubscibe_id)) do
+    IO.puts "Subscribing the user"
+    IO.inspect(userToSubscibe_id)
+    result = if(:ets.member(:users, userToSubscibe_id)) do
       [{userToSubscibe_id, followers}] = :ets.lookup(:users, userToSubscibe_id)
       if(length(followers)<=0 or !Enum.member?(followers, user_id)) do
           Utils.update_followers_list(userToSubscibe_id, user_id)
           Utils.update_following_list(userToSubscibe_id, user_id)
+          "Successful"
+      else
+        "User Already Subscribed"
       end
+    else
+        "Unsuccessful"
     end
-    {:noreply, state}
+    {:reply, result, state}
   end
 
   def handle_call({:search_hashtags, user_id, search_hashtags}, _from,state) do
