@@ -63,8 +63,7 @@ defmodule Utils do
             :ets.member(:hashtags, each_ht) ->
               # IO.puts("hashtagggggggggggggggggggggggggggggggggggggggg #{each_ht}")
               [{_, tweets_for_ht}] = :ets.lookup(:hashtags, each_ht)
-              tweets_for_ht ++ [tweet_owner, tweet_content]
-
+              tweets_for_ht ++ [[tweet_owner, tweet_content]]
             true ->
               # IO.puts("nooooooooooooooooooooooooooooooooooooooo ")
               [[tweet_owner, tweet_content]]
@@ -80,16 +79,17 @@ defmodule Utils do
   end
 
   def insert_into_mentionsTable(mentions_list, tweet_owner, tweet_content) do
+    IO.inspect "inserting in mentionsssssssssssssssssssssssssssssssssssssssssssss"
     if(length(mentions_list) > 0) do
       Enum.each(mentions_list, fn each_mention ->
         mention_tweet =
           cond do
             :ets.member(:mentionIds, each_mention) ->
               [{_, tweets_for_mention}] = :ets.lookup(:mentionIds, each_mention)
-              tweets_for_mention ++ [{tweet_owner, tweet_content}]
+              tweets_for_mention ++ [[tweet_owner, tweet_content]]
 
             true ->
-              [{tweet_owner, tweet_content}]
+              [[tweet_owner, tweet_content]]
           end
 
         :ets.insert(:mentionIds, {each_mention, mention_tweet})
@@ -262,5 +262,4 @@ defmodule Utils do
       end
     List.flatten(tweet_list)
   end
-
 end

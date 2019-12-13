@@ -50,7 +50,7 @@ defmodule Engine do
           tweets ++ [{tweet_owner, tweet_content}]
 
         true ->
-          [{tweet_owner, tweet_content}]
+          [[tweet_owner, tweet_content]]
       end
 
     Utils.insert_into_userTweets(user_id, tweet)
@@ -69,10 +69,17 @@ defmodule Engine do
       []
     end
 
+    mentions_list = Enum.map(mentions_list, fn user -> String.slice(user,1..-1) end)
+
+    subscriber_list = subscriber_list ++ mentions_list
+    IO.inspect(subscriber_list)
+    subscriber_list = Enum.uniq(subscriber_list)
+
     {:reply, subscriber_list ,state}
+
   end
 
-  def handle_cast({:handle_retweet, user_id, tweet_owner, tweet_content}, state) do
+  def handle_call({:handle_retweet, user_id, tweet_owner, tweet_content}, _from, state) do
     #IO.puts("Handle tweet")
     #IO.inspect(tweet_content)
 
@@ -87,10 +94,15 @@ defmodule Engine do
       end
 
     :ets.insert(:userTweets, {user_id, tweet})
-    Utils.send_tweet_to_subscribers(user_id, {tweet_owner, tweet_content})
+    #Utils.send_tweet_to_subscribers(user_id, {tweet_owner, tweet_content})
+    subscriber_list = if :ets.member(:users, user_id) do
+      [{_, subscriber_list}] = :ets.lookup(:users, user_id)
+      subscriber_list
+    else
+      []
+    end
 
-    {:noreply, state}
-
+    {:reply, subscriber_list, state}
   end
 
   # UserToSub_id is the one you want to follow, user_id is the one following
@@ -124,11 +136,11 @@ defmodule Engine do
     {:reply, tweets_for_hashtag, state}
   end
 
-  def handle_cast({:search_mentions, user_id, search_mentions}, state) do
+  def handle_call({:search_mentions, user_id, search_mentions}, _from,state) do
     tweets_for_mention = Utils.get_tweets_with_mentions(search_mentions)
-    GenServer.cast(String.to_atom(to_string(user_id)), {:search_mention_reply, tweets_for_mention})
+    #GenServer.cast(String.to_atom(to_string(user_id)), {:search_mention_reply, tweets_for_mention})
 
-    {:noreply, state}
+    {:reply, tweets_for_mention, state}
   end
 
   def handle_cast({:delete_user_account, user_id}, state) do

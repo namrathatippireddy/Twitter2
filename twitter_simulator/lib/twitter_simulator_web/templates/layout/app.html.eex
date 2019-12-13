@@ -9,16 +9,9 @@
   </head>
   <body>
     <header>
-      <!-- put form here -->
-  <input id="username" type="text" placeholder="enter your username" class="form-control" style="display:inline"></input>
-  <input id="sendtweet" type="text" placeholder="send tweet" class="form-control"></input>
-  <input id="subscribe" type="text" placeholder="enter user to subscribe"  class="form-control"></input>
-  <button id="search_user_tweets" type="button" class="btn btn-info">search tweets you are subscribed to</button>
-  <input id="search_hashtag" type="text" placeholder="search hashtag"  class="form-control"></input>
-  <button id="search_mentions" type="button"  class="btn btn-info">search your mentions</button>
-  <button id="clear_screen" type="button"  class="btn btn-info">clear screen</button>
-  <div id="messages"></div>
 
+      <center><h2><b> Twitter Simulator </b></h2>
+      <img src="<%= Routes.static_path(@conn, "/images/tweety.jpg")%>" alt="tweety" height="60" width="42"/></center>
 
     </header>
     <main role="main" class="container">
