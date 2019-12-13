@@ -31,7 +31,7 @@ defmodule Engine do
     {:noreply, state}
   end
 
-  def handle_cast({:handle_tweet, user_id, tweet_owner, tweet_content}, state) do
+  def handle_call({:handle_tweet, user_id, tweet_owner, tweet_content}, _from,state) do
     # Once a user tweets, the engine should get the subscribers of the user and then extract the
     # hashtags and mentions, if there is hashtag, then insert the tweet into the table with that hashtag as key
     # if there is a mention, then get the user who is mentioned and add it to the mentions table
@@ -61,9 +61,15 @@ defmodule Engine do
     mentions_list = Utils.get_mentions(tweet_content)
     Utils.insert_into_mentionsTable(mentions_list, tweet_owner, tweet_content)
 
-    Utils.send_tweet_to_subscribers(user_id, {tweet_owner, tweet_content})
+    #Utils.send_tweet_to_subscribers(user_id, {tweet_owner, tweet_content})
+    subscriber_list = if :ets.member(:users, user_id) do
+      [{_, subscriber_list}] = :ets.lookup(:users, user_id)
+      subscriber_list
+    else
+      []
+    end
 
-    {:noreply, state}
+    {:reply, subscriber_list ,state}
   end
 
   def handle_cast({:handle_retweet, user_id, tweet_owner, tweet_content}, state) do
@@ -108,14 +114,14 @@ defmodule Engine do
   end
 
   def handle_call({:search_hashtags, user_id, search_hashtags}, _from,state) do
-
+    IO.puts "*********************Inside search hashtags***********************"
     start_time = System.monotonic_time()
-    IO.puts start_time
+    #IO.puts start_time
     tweets_for_hashtag = Utils.get_tweets_for_hashtag(search_hashtags)
+    IO.inspect(tweets_for_hashtag)
     end_time = System.monotonic_time()
-    IO.puts end_time
     IO.puts "Time taken to query a hashtag = #{end_time-start_time}"
-    {:reply, tweets_for_hashtag,state}
+    {:reply, tweets_for_hashtag, state}
   end
 
   def handle_cast({:search_mentions, user_id, search_mentions}, state) do
