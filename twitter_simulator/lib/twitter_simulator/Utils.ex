@@ -49,6 +49,7 @@ defmodule Utils do
   end
 
   def insert_into_hashtagTable(list_of_hashtags, tweet_owner, tweet_content) do
+    #IO.puts "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&"
     #IO.inspect(list_of_hashtags)
 
     if(length(list_of_hashtags) > 0) do
@@ -62,32 +63,33 @@ defmodule Utils do
             :ets.member(:hashtags, each_ht) ->
               # IO.puts("hashtagggggggggggggggggggggggggggggggggggggggg #{each_ht}")
               [{_, tweets_for_ht}] = :ets.lookup(:hashtags, each_ht)
-              tweets_for_ht ++ [{tweet_owner, tweet_content}]
-
+              tweets_for_ht ++ [[tweet_owner, tweet_content]]
             true ->
               # IO.puts("nooooooooooooooooooooooooooooooooooooooo ")
-              [{tweet_owner, tweet_content}]
+              [[tweet_owner, tweet_content]]
           end
 
         :ets.insert(:hashtags, {each_ht, ht_tweet})
-        # IO.puts("Insertion complete")
-        # a = :ets.lookup(:hashtags, "#h123")
-        # IO.inspect(a)
+        IO.puts("Insertion complete")
+         a = :ets.lookup(:hashtags, each_ht)
+         IO.inspect(a)
+
       end)
     end
   end
 
   def insert_into_mentionsTable(mentions_list, tweet_owner, tweet_content) do
+    IO.inspect "inserting in mentionsssssssssssssssssssssssssssssssssssssssssssss"
     if(length(mentions_list) > 0) do
       Enum.each(mentions_list, fn each_mention ->
         mention_tweet =
           cond do
             :ets.member(:mentionIds, each_mention) ->
               [{_, tweets_for_mention}] = :ets.lookup(:mentionIds, each_mention)
-              tweets_for_mention ++ [{tweet_owner, tweet_content}]
+              tweets_for_mention ++ [[tweet_owner, tweet_content]]
 
             true ->
-              [{tweet_owner, tweet_content}]
+              [[tweet_owner, tweet_content]]
           end
 
         :ets.insert(:mentionIds, {each_mention, mention_tweet})
@@ -97,6 +99,7 @@ defmodule Utils do
 
   def send_tweet_to_subscribers(user_id, tweet_content) do
     # get the subscribers for the given user_id and forward the tweet
+
     if :ets.member(:users, user_id) do
       [{_, subscriber_list}] = :ets.lookup(:users, user_id)
       # IO.inspect(subscriber_list)
@@ -147,7 +150,7 @@ defmodule Utils do
   def update_followers_list(userToSubscibe_id, user_id) do
     # we are updating the followers list of UserToSub_id
     #IO.inspect(user_id)
-    IO.puts "Updating followers list of userid to subscribe@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    #IO.puts "Updating followers list of userid to subscribe@@@@@@@@@@@@@@@@@@@@@@@@@@"
     followers_list = get_followers(userToSubscibe_id, user_id)
     #IO.inspect(followers_list)
     :ets.insert(:users, {userToSubscibe_id, followers_list})
@@ -156,7 +159,7 @@ defmodule Utils do
 
   def update_following_list(userToSubscibe_id, user_id) do
     # we also update the following table of the present user who called this function
-    IO.puts "Updating following list of user*****************************"
+    #IO.puts "Updating following list of user*****************************"
     subscribed_list = get_following(userToSubscibe_id, user_id)
     #IO.puts "subscribing"
     #IO.inspect(subscribed_list)
@@ -192,9 +195,11 @@ defmodule Utils do
   end
 
   def get_tweets_for_hashtag(search_hashtag) do
+    IO.puts "searching #{search_hashtag} -----------------------------------"
     tweets_for_hashtag =
       cond do
         :ets.member(:hashtags, search_hashtag) ->
+          IO.puts "searching #{search_hashtag} @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
           [{_, listOfTweetsforHashtag}] = :ets.lookup(:hashtags, search_hashtag)
           listOfTweetsforHashtag
 
@@ -257,5 +262,4 @@ defmodule Utils do
       end
     List.flatten(tweet_list)
   end
-
 end
